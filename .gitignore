@@ -2,4 +2,10 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+.agents/
+.claude/
+.cursor/
+.devin/
+
 *.log
