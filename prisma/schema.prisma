@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  permissions RolePermission[]
+  users       User[]
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  code        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model User {
+  id              String        @id @default(cuid())
+  name            String
+  email           String        @unique
+  passwordHash    String?
+  status          UserStatus    @default(INVITED)
+  roleId          String
+  inviteTokenHash String?
+  inviteExpiresAt DateTime?
+  createdById     String?
+  lastLoginAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  sentEmails      EmailRecord[]
+  leads           Lead[]
+  createdBy       User?         @relation("UserCreator", fields: [createdById], references: [id])
+  createdUsers    User[]        @relation("UserCreator")
+  role            Role          @relation(fields: [roleId], references: [id])
+
+  @@index([roleId])
+  @@index([status])
+  @@index([createdById])
+}
+
+model Lead {
+  id                String        @id @default(cuid())
+  leadCode          String        @unique
+  createdById       String
+  clientName        String
+  clientEmail       String
+  clientPhone       String?
+  destination       String?
+  travelDate        DateTime?
+  travelRequirement String?
+  notes             String?
+  status            LeadStatus    @default(NEW)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  emails            EmailRecord[]
+  createdBy         User          @relation(fields: [createdById], references: [id])
+
+  @@index([clientEmail])
+  @@index([createdById])
+  @@index([status])
+}
+
+model EmailTemplate {
+  id        String        @id @default(cuid())
+  name      String
+  subject   String
+  html      String
+  version   Int           @default(1)
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  emails    EmailRecord[]
+}
+
+model EmailRecord {
+  id                  String           @id @default(cuid())
+  leadId              String
+  sentById            String
+  templateId          String?
+  recipientEmail      String
+  subject             String
+  htmlBody            String
+  acceptanceTokenHash String?          @unique
+  acceptanceExpiresAt DateTime?
+  status              EmailStatus      @default(SENT)
+  sentAt              DateTime         @default(now())
+  acceptedAt          DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  acceptance          EmailAcceptance?
+  lead                Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  sentBy              User             @relation(fields: [sentById], references: [id])
+  template            EmailTemplate?   @relation(fields: [templateId], references: [id])
+
+  @@index([leadId])
+  @@index([sentById])
+  @@index([status])
+}
+
+model EmailAcceptance {
+  id         String      @id @default(cuid())
+  emailId    String      @unique
+  accepted   Boolean     @default(true)
+  ipAddress  String?
+  userAgent  String?
+  acceptedAt DateTime    @default(now())
+  email      EmailRecord @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@index([ipAddress])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  INACTIVE
+}
+
+enum LeadStatus {
+  NEW
+  IN_PROGRESS
+  EMAIL_SENT
+  ACCEPTED
+  CLOSED
+}
+
+enum EmailStatus {
+  SENT
+  ACCEPTED
+  DECLINED
+  FAILED
+}
