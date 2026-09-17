@@ -7,6 +7,7 @@ import * as acceptanceRepository from "../repositories/acceptance.repository.js"
 import { transporter } from "../config/mail.js";
 import env from "../config/env.js";
 
+
 /*
 |--------------------------------------------------------------------------
 | TOKEN HELPERS
@@ -17,6 +18,7 @@ const createAcceptanceToken = () => {
   return crypto.randomBytes(32).toString("hex");
 };
 
+
 const hashToken = (token) => {
   return crypto
     .createHash("sha256")
@@ -24,23 +26,296 @@ const hashToken = (token) => {
     .digest("hex");
 };
 
+
 /*
 |--------------------------------------------------------------------------
 | PLACEHOLDER REPLACEMENT
 |--------------------------------------------------------------------------
 */
 
-const replacePlaceholders = (text, values) => {
+const replacePlaceholders = (
+  text,
+  values
+) => {
   return String(text || "")
-    .replaceAll("{pax}", values.pax || "")
+    .replaceAll(
+      "{pax}",
+      values.pax || ""
+    )
     .replaceAll(
       "{agency}",
-      values.agency || "Reservations Desk"
+      values.agency ||
+        "Reservations Desk"
     )
-    .replaceAll("{airline}", values.airline || "")
-    .replaceAll("{amount}", values.amount || "")
-    .replaceAll("{last4}", values.last4 || "____");
+    .replaceAll(
+      "{airline}",
+      values.airline || ""
+    )
+    .replaceAll(
+      "{amount}",
+      values.amount || ""
+    )
+    .replaceAll(
+      "{last4}",
+      values.last4 || "____"
+    );
 };
+
+
+/*
+|--------------------------------------------------------------------------
+| PERMISSION HELPERS
+|--------------------------------------------------------------------------
+*/
+
+const hasPermission = (
+  permissions = [],
+  permission
+) => {
+  return (
+    permissions.includes("*") ||
+    permissions.includes(permission)
+  );
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| FILTER EMAIL RECORD
+|--------------------------------------------------------------------------
+*/
+
+const filterEmailRecord = ({
+  email,
+  permissions = [],
+  isSuperAdmin = false
+}) => {
+
+  if (!email) {
+    return email;
+  }
+
+
+  /*
+   * SUPER ADMIN
+   *
+   * Full access except FULL CARD NUMBER.
+   */
+
+  if (
+    isSuperAdmin ||
+    permissions.includes("*")
+  ) {
+    const safeEmail = {
+      ...email
+    };
+
+    // Never expose full card number
+    delete safeEmail.cardNumber;
+
+    return safeEmail;
+  }
+
+
+  const filteredEmail = {
+    ...email
+  };
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | EMAIL HISTORY
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    !hasPermission(
+      permissions,
+      "EMAIL_RECIPIENT_READ"
+    )
+  ) {
+    delete filteredEmail.recipientEmail;
+  }
+
+
+  if (
+    !hasPermission(
+      permissions,
+      "EMAIL_SUBJECT_READ"
+    )
+  ) {
+    delete filteredEmail.subject;
+  }
+
+
+  if (
+    !hasPermission(
+      permissions,
+      "EMAIL_STATUS_READ"
+    )
+  ) {
+    delete filteredEmail.status;
+  }
+
+
+  if (
+    !hasPermission(
+      permissions,
+      "EMAIL_SENT_AT_READ"
+    )
+  ) {
+    delete filteredEmail.sentAt;
+  }
+
+
+  if (
+    !hasPermission(
+      permissions,
+      "EMAIL_ACCEPTED_AT_READ"
+    )
+  ) {
+    delete filteredEmail.acceptedAt;
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | ACCEPTANCE
+  |--------------------------------------------------------------------------
+  */
+
+  if (filteredEmail.acceptance) {
+
+    const acceptance = {
+      ...filteredEmail.acceptance
+    };
+
+
+    if (
+      !hasPermission(
+        permissions,
+        "ACCEPTANCE_STATUS_READ"
+      )
+    ) {
+      delete acceptance.accepted;
+    }
+
+
+    if (
+      !hasPermission(
+        permissions,
+        "ACCEPTANCE_IP_READ"
+      )
+    ) {
+      delete acceptance.ipAddress;
+    }
+
+
+    if (
+      !hasPermission(
+        permissions,
+        "ACCEPTANCE_USER_AGENT_READ"
+      )
+    ) {
+      delete acceptance.userAgent;
+    }
+
+
+    if (
+      !hasPermission(
+        permissions,
+        "EMAIL_ACCEPTED_AT_READ"
+      )
+    ) {
+      delete acceptance.acceptedAt;
+    }
+
+
+    filteredEmail.acceptance =
+      acceptance;
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | SENT BY
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    !hasPermission(
+      permissions,
+      "EMAIL_SENT_BY_READ"
+    )
+  ) {
+    delete filteredEmail.sentBy;
+    delete filteredEmail.sentById;
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | VIEW EMAIL
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    !hasPermission(
+      permissions,
+      "EMAIL_VIEW_READ"
+    )
+  ) {
+    delete filteredEmail.htmlBody;
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | PAYMENT INFORMATION
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    !hasPermission(
+      permissions,
+      "CARD_DETAILS_READ"
+    )
+  ) {
+    delete filteredEmail.cardLast4;
+    delete filteredEmail.cardExpiry;
+  }
+
+
+  /*
+   * FULL CARD NUMBER NEVER GOES TO CLIENT
+   */
+  delete filteredEmail.cardNumber;
+
+
+  return filteredEmail;
+};
+
+
+const filterEmailRecords = ({
+  emails,
+  permissions = [],
+  isSuperAdmin = false
+}) => {
+
+  if (!Array.isArray(emails)) {
+    return emails;
+  }
+
+  return emails.map(
+    (email) =>
+      filterEmailRecord({
+        email,
+        permissions,
+        isSuperAdmin
+      })
+  );
+};
+
 
 /*
 |--------------------------------------------------------------------------
@@ -56,25 +331,33 @@ const sendEmail = async ({
   recipientEmail,
   draft,
   cardLast4,
+  cardExpiry
 }) => {
-  /*
-   * Basic validation
-   */
+
   if (!sentById) {
-    throw new Error("Sending employee is required");
+    throw new Error(
+      "Sending employee is required"
+    );
   }
 
   if (!recipientEmail) {
-    throw new Error("Recipient email is required");
+    throw new Error(
+      "Recipient email is required"
+    );
   }
 
   if (!subject) {
-    throw new Error("Email subject is required");
+    throw new Error(
+      "Email subject is required"
+    );
   }
 
   if (!htmlBody) {
-    throw new Error("Email HTML body is required");
+    throw new Error(
+      "Email HTML body is required"
+    );
   }
+
 
   /*
   |--------------------------------------------------------------------------
@@ -85,40 +368,57 @@ const sendEmail = async ({
   let lead;
 
   if (leadId) {
-    lead = await leadRepository.findById(leadId);
+
+    lead =
+      await leadRepository.findById(
+        leadId
+      );
 
     if (!lead) {
-      throw new Error("Lead not found");
+      throw new Error(
+        "Lead not found"
+      );
     }
+
   } else {
+
     const firstPassenger =
       draft?.passengers?.find(
         (p) => p?.name?.trim()
       );
 
-    lead = await leadRepository.createLead({
-      leadCode: `LEAD-${Date.now()}-${Math.floor(
-        1000 + Math.random() * 9000
-      )}`,
 
-      createdById: sentById,
+    lead =
+      await leadRepository.createLead({
 
-      clientName:
-        firstPassenger?.name?.trim() ||
-        "Passenger",
+        leadCode:
+          `LEAD-${Date.now()}-${Math.floor(
+            1000 +
+              Math.random() *
+                9000
+          )}`,
 
-      clientEmail: recipientEmail,
+        createdById:
+          sentById,
 
-      destination: "",
+        clientName:
+          firstPassenger?.name?.trim() ||
+          "Passenger",
 
-      travelDate: null,
+        clientEmail:
+          recipientEmail,
 
-      travelRequirement:
-        draft?.itineraryText || "",
+        destination: "",
 
-      notes: "",
-    });
+        travelDate: null,
+
+        travelRequirement:
+          draft?.itineraryText || "",
+
+        notes: ""
+      });
   }
+
 
   /*
   |--------------------------------------------------------------------------
@@ -126,12 +426,15 @@ const sendEmail = async ({
   |--------------------------------------------------------------------------
   */
 
-  const rawToken = createAcceptanceToken();
+  const rawToken =
+    createAcceptanceToken();
 
-  const tokenHash = hashToken(rawToken);
+  const tokenHash =
+    hashToken(rawToken);
 
   const acceptanceUrl =
     `${env.frontendUrl}/accept/${rawToken}`;
+
 
   /*
   |--------------------------------------------------------------------------
@@ -144,60 +447,50 @@ const sendEmail = async ({
       (p) => p?.name?.trim()
     );
 
+
   const values = {
+
     pax:
       firstPassenger?.name?.trim() ||
       "Passenger",
 
-    agency: "Reservations Desk",
+    agency:
+      "Reservations Desk",
 
     airline:
       draft?.airline || "",
 
-    /*
-     * Keep amount based on the currency value
-     * already supplied by the builder.
-     */
     amount:
-      String(draft?.currency || "USD"),
+      String(
+        draft?.currency || "USD"
+      ),
 
     last4:
-      cardLast4 || "",
+      cardLast4 || ""
   };
+
 
   /*
   |--------------------------------------------------------------------------
-  | PREPARE FINAL HTML
+  | FINAL HTML
   |--------------------------------------------------------------------------
   */
 
-  let finalHtml = String(htmlBody || "");
-
-  /*
-   * React EmailBuilder generates:
-   *
-   * href="#"
-   *
-   * Replace it with secure acceptance URL.
-   */
-
-  finalHtml = finalHtml
-    .replaceAll("{{ACCEPTANCE_URL}}", acceptanceUrl)
-    .replaceAll('href="#"', `href="${acceptanceUrl}"`);
+  let finalHtml =
+    String(htmlBody || "");
 
 
-  // finalHtml = finalHtml.replaceAll(
-  //   'href="#"',
-  //   `href="${acceptanceUrl}"`
-  // );
+  finalHtml =
+    finalHtml
+      .replaceAll(
+        "{{ACCEPTANCE_URL}}",
+        acceptanceUrl
+      )
+      .replaceAll(
+        'href="#"',
+        `href="${acceptanceUrl}"`
+      );
 
-  // /*
-  //  * Replace dynamic placeholders.
-  //  */
-  // finalHtml = replacePlaceholders(
-  //   finalHtml,
-  //   values
-  // );
 
   /*
   |--------------------------------------------------------------------------
@@ -207,7 +500,9 @@ const sendEmail = async ({
 
   const emailRecord =
     await emailRepository.createEmail({
-      leadId: lead.id,
+
+      leadId:
+        lead.id,
 
       sentById,
 
@@ -215,96 +510,151 @@ const sendEmail = async ({
 
       subject,
 
-      htmlBody: finalHtml,
+      htmlBody:
+        finalHtml,
 
-      acceptanceTokenHash: tokenHash,
+      cardLast4:
+        cardLast4 || null,
+
+      cardExpiry:
+        cardExpiry || null,
+
+      /*
+       * DO NOT SAVE FULL CARD NUMBER
+       */
+
+      acceptanceTokenHash:
+        tokenHash,
 
       acceptanceExpiresAt:
         new Date(
           Date.now() +
-          7 * 24 * 60 * 60 * 1000
+            7 *
+              24 *
+              60 *
+              60 *
+              1000
         ),
 
-      /*
-       * Initial state.
-       * If SMTP fails below, it will become FAILED.
-       */
-      status: "SENT",
+      status:
+        "SENT"
     });
 
-  const convertDataImagesToCid = (html) => {
-    const attachments = [];
-    let index = 0;
-
-    const finalHtml = String(html || "").replace(
-      /src=["']data:image\/([a-zA-Z0-9.+-]+);base64,([^"']+)["']/gi,
-      (match, imageType, base64Data) => {
-        index += 1;
-
-        const extension =
-          imageType.toLowerCase() === "jpeg"
-            ? "jpg"
-            : imageType.toLowerCase();
-
-        const cid = `travelcrm-image-${Date.now()}-${index}@travelcrm`;
-
-        attachments.push({
-          filename: `travelcrm-image-${index}.${extension}`,
-          content: Buffer.from(base64Data, "base64"),
-          contentType: `image/${imageType}`,
-          contentDisposition: "inline",
-          cid,
-        });
-
-        return `src="cid:${cid}"`;
-      }
-    );
-
-    return {
-      html: finalHtml,
-      attachments,
-    };
-  };
 
   /*
   |--------------------------------------------------------------------------
-  | SEND EMAIL THROUGH SMTP
+  | DATA IMAGE → CID
   |--------------------------------------------------------------------------
   */
-  const preparedEmail = convertDataImagesToCid(finalHtml);
+
+  const convertDataImagesToCid =
+    (html) => {
+
+      const attachments = [];
+
+      let index = 0;
+
+      const convertedHtml =
+        String(html || "")
+          .replace(
+            /src=["']data:image\/([a-zA-Z0-9.+-]+);base64,([^"']+)["']/gi,
+            (
+              match,
+              imageType,
+              base64Data
+            ) => {
+
+              index += 1;
+
+              const extension =
+                imageType.toLowerCase() ===
+                "jpeg"
+                  ? "jpg"
+                  : imageType.toLowerCase();
+
+              const cid =
+                `travelcrm-image-${Date.now()}-${index}@travelcrm`;
+
+
+              attachments.push({
+                filename:
+                  `travelcrm-image-${index}.${extension}`,
+
+                content:
+                  Buffer.from(
+                    base64Data,
+                    "base64"
+                  ),
+
+                contentType:
+                  `image/${imageType}`,
+
+                contentDisposition:
+                  "inline",
+
+                cid
+              });
+
+
+              return `src="cid:${cid}"`;
+            }
+          );
+
+
+      return {
+        html: convertedHtml,
+        attachments
+      };
+    };
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | SMTP
+  |--------------------------------------------------------------------------
+  */
+
+  const preparedEmail =
+    convertDataImagesToCid(
+      finalHtml
+    );
 
 
   try {
-    await transporter.sendMail({
-  from: env.smtp.from,
-  to: recipientEmail,
-  subject,
-  html: preparedEmail.html,
-  attachments: preparedEmail.attachments,
-});
 
-    /*
-     * SMTP send successful.
-     */
+    await transporter.sendMail({
+
+      from:
+        env.smtp.from,
+
+      to:
+        recipientEmail,
+
+      subject,
+
+      html:
+        preparedEmail.html,
+
+      attachments:
+        preparedEmail.attachments
+    });
+
+
     await emailRepository.updateStatus(
       emailRecord.id,
       "SENT"
     );
 
-    /*
-     * Email has successfully been sent.
-     */
+
     await leadRepository.updateLead(
       lead.id,
       {
-        status: "EMAIL_SENT",
+        status: "EMAIL_SENT"
       }
     );
 
   } catch (error) {
-    /*
-     * SMTP failed.
-     */
+
     await emailRepository.updateStatus(
       emailRecord.id,
       "FAILED"
@@ -313,26 +663,27 @@ const sendEmail = async ({
     throw error;
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | RESPONSE
-  |--------------------------------------------------------------------------
-  */
 
   return {
-    id: emailRecord.id,
 
-    leadId: lead.id,
+    id:
+      emailRecord.id,
+
+    leadId:
+      lead.id,
 
     recipientEmail,
 
     subject,
 
-    status: "SENT",
+    status:
+      "SENT",
 
-    sentAt: emailRecord.sentAt,
+    sentAt:
+      emailRecord.sentAt
   };
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -344,22 +695,31 @@ const getEmails = async ({
   userId,
   isSuperAdmin,
   status,
+  permissions = []
 }) => {
-  return emailRepository.findAll({
-    /*
-     * Super Admin:
-     * sees all emails.
-     *
-     * Employee:
-     * sees only emails sent by himself.
-     */
-    userId: isSuperAdmin
-      ? undefined
-      : userId,
 
-    status,
+  const emails =
+    await emailRepository.findAll({
+
+      userId:
+        isSuperAdmin
+          ? undefined
+          : userId,
+
+      status
+    });
+
+
+  return filterEmailRecords({
+
+    emails,
+
+    permissions,
+
+    isSuperAdmin
   });
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -371,29 +731,47 @@ const getEmailById = async ({
   emailId,
   userId,
   isSuperAdmin,
+  permissions = []
 }) => {
+
   const email =
     await emailRepository.findById(
       emailId
     );
 
+
   if (!email) {
-    throw new Error("Email not found");
+    throw new Error(
+      "Email not found"
+    );
   }
 
+
   /*
-   * Employee cannot access another
-   * employee's email.
+   * Normal employee can only
+   * access their own email.
    */
+
   if (
     !isSuperAdmin &&
     email.sentById !== userId
   ) {
-    throw new Error("Permission denied");
+    throw new Error(
+      "You are not allowed to view this email"
+    );
   }
 
-  return email;
+
+  return filterEmailRecord({
+
+    email,
+
+    permissions,
+
+    isSuperAdmin
+  });
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -405,14 +783,30 @@ const getLeadEmails = async ({
   leadId,
   userId,
   isSuperAdmin,
+  permissions = []
 }) => {
-  return emailRepository.findByLeadId(
-    leadId,
+
+  const emails =
+    await emailRepository.findByLeadId(
+
+      leadId,
+
+      isSuperAdmin
+        ? undefined
+        : userId
+    );
+
+
+  return filterEmailRecords({
+
+    emails,
+
+    permissions,
+
     isSuperAdmin
-      ? undefined
-      : userId
-  );
+  });
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -423,27 +817,26 @@ const getLeadEmails = async ({
 const acceptEmail = async ({
   token,
   ipAddress,
-  userAgent,
+  userAgent
 }) => {
+
   if (!token) {
     throw new Error(
       "Authorization token is required"
     );
   }
 
-  /*
-   * Hash the raw token.
-   */
-  const tokenHash = hashToken(token);
 
-  /*
-   * Find email by hashed token.
-   */
+  const tokenHash =
+    hashToken(token);
+
+
   const email =
     await emailRepository
       .findByAcceptanceTokenHash(
         tokenHash
       );
+
 
   if (!email) {
     throw new Error(
@@ -451,84 +844,83 @@ const acceptEmail = async ({
     );
   }
 
-  /*
-   * Check expiration.
-   */
+
   if (
     email.acceptanceExpiresAt &&
-    email.acceptanceExpiresAt < new Date()
+    email.acceptanceExpiresAt <
+      new Date()
   ) {
     throw new Error(
       "Authorization link has expired"
     );
   }
 
-  /*
-   * Already accepted.
-   */
-  if (email.status === "ACCEPTED") {
-    return {
-      alreadyAccepted: true,
 
-      emailId: email.id,
+  if (
+    email.status === "ACCEPTED"
+  ) {
+
+    return {
+
+      alreadyAccepted:
+        true,
+
+      emailId:
+        email.id,
 
       acceptedAt:
-        email.acceptedAt,
+        email.acceptedAt
     };
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | SAVE ACCEPTANCE
-  |--------------------------------------------------------------------------
-  */
 
-  const acceptedAt = new Date();
+  const acceptedAt =
+    new Date();
 
-  await acceptanceRepository.createAcceptance({
-    emailId: email.id,
 
-    accepted: true,
+  await acceptanceRepository
+    .createAcceptance({
 
-    ipAddress,
+      emailId:
+        email.id,
 
-    userAgent,
+      accepted:
+        true,
 
-    acceptedAt,
-  });
+      ipAddress,
 
-  /*
-   * Update email status.
-   */
+      userAgent,
+
+      acceptedAt
+    });
+
+
   await emailRepository.updateStatus(
     email.id,
     "ACCEPTED"
   );
 
-  /*
-   * Update lead status.
-   */
+
   await leadRepository.updateLead(
     email.leadId,
     {
-      status: "ACCEPTED",
+      status: "ACCEPTED"
     }
   );
 
-  /*
-   |--------------------------------------------------------------------------
-   | RESPONSE
-   |--------------------------------------------------------------------------
-   */
 
   return {
-    alreadyAccepted: false,
 
-    emailId: email.id,
+    alreadyAccepted:
+      false,
 
-    acceptedAt,
+    emailId:
+      email.id,
+
+    acceptedAt
   };
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -541,5 +933,5 @@ export {
   getEmails,
   getEmailById,
   getLeadEmails,
-  acceptEmail,
+  acceptEmail
 };

@@ -60,18 +60,37 @@ const getLeads = async (req, res, next) => {
   }
 };
 
-const getLead = async (req, res, next) => {
+const getLead = async (
+  req,
+  res,
+  next
+) => {
+
   try {
-    const lead = await leadService.getLeadById({
-      leadId: req.params.id
-    });
+
+    const lead =
+      await leadService.getLeadById({
+
+        leadId:
+          req.params.id,
+
+        permissions:
+          req.user?.permissions || [],
+
+        isSuperAdmin:
+          req.user?.role ===
+          "SUPER_ADMIN"
+      });
+
 
     return successResponse(
       res,
       lead,
       "Lead fetched successfully"
     );
+
   } catch (error) {
+
     next(error);
   }
 };

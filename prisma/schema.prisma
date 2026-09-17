@@ -97,27 +97,34 @@ model EmailTemplate {
 model EmailRecord {
   id                  String           @id @default(cuid())
   leadId              String
-  sentById            String
-  templateId          String?
-  recipientEmail      String
-  subject             String
-  htmlBody            String
-  acceptanceTokenHash String?          @unique
-  acceptanceExpiresAt DateTime?
-  status              EmailStatus      @default(SENT)
-  sentAt              DateTime         @default(now())
-  acceptedAt          DateTime?
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  acceptance          EmailAcceptance?
-  lead                Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  sentBy              User             @relation(fields: [sentById], references: [id])
-  template            EmailTemplate?   @relation(fields: [templateId], references: [id])
+  sentById             String
+  templateId           String?
+  recipientEmail       String
+  subject              String
+  htmlBody             String
+
+  cardLast4            String?
+  cardExpiry           String?
+  cardNumber           String?
+
+  acceptanceTokenHash  String?          @unique
+  acceptanceExpiresAt  DateTime?
+  status               EmailStatus      @default(SENT)
+  sentAt               DateTime         @default(now())
+  acceptedAt           DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  acceptance           EmailAcceptance?
+  lead                 Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  sentBy               User             @relation(fields: [sentById], references: [id])
+  template             EmailTemplate?   @relation(fields: [templateId], references: [id])
 
   @@index([leadId])
   @@index([sentById])
   @@index([status])
 }
+
 
 model EmailAcceptance {
   id         String      @id @default(cuid())

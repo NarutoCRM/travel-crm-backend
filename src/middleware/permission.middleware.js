@@ -3,7 +3,6 @@ import { prisma } from "../config/database.js";
 const permissionMiddleware = (...requiredPermissions) => {
   return async (req, res, next) => {
     try {
-      // Authentication check
       if (!req.user) {
         return res.status(401).json({
           success: false,
@@ -11,12 +10,12 @@ const permissionMiddleware = (...requiredPermissions) => {
         });
       }
 
-      // Super Admin has full access
+      // SUPER ADMIN = full access
       if (req.user.role === "SUPER_ADMIN") {
+        req.user.permissions = ["*"];
         return next();
       }
 
-      // JWT user ID
       const userId =
         req.user.userId ||
         req.user.id ||
@@ -29,7 +28,6 @@ const permissionMiddleware = (...requiredPermissions) => {
         });
       }
 
-      // Load user's role + permissions from database
       const user = await prisma.user.findUnique({
         where: {
           id: userId
@@ -63,7 +61,6 @@ const permissionMiddleware = (...requiredPermissions) => {
         });
       }
 
-      // Inactive user cannot access protected resources
       if (user.status !== "ACTIVE") {
         return res.status(403).json({
           success: false,
@@ -71,7 +68,6 @@ const permissionMiddleware = (...requiredPermissions) => {
         });
       }
 
-      // Inactive role cannot access protected resources
       if (!user.role || !user.role.isActive) {
         return res.status(403).json({
           success: false,
@@ -79,13 +75,11 @@ const permissionMiddleware = (...requiredPermissions) => {
         });
       }
 
-      // Convert DB permissions into permission codes
       const userPermissions =
         user.role.permissions.map(
           (item) => item.permission.code
         );
 
-      // Check required permission
       const hasPermission =
         requiredPermissions.some(
           (permission) =>
@@ -99,7 +93,6 @@ const permissionMiddleware = (...requiredPermissions) => {
         });
       }
 
-      // Keep permissions available for downstream controllers if needed
       req.user.permissions = userPermissions;
 
       next();
@@ -115,8 +108,7 @@ const permissionMiddleware = (...requiredPermissions) => {
   };
 };
 
-const requirePermission =
-  permissionMiddleware;
+const requirePermission = permissionMiddleware;
 
 export {
   permissionMiddleware,

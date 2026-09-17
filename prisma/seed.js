@@ -2,40 +2,6 @@ import { prisma } from "../src/config/database.js";
 
 
 const permissions = [
-  {
-    code: "DASHBOARD_READ",
-    description: "View dashboard"
-  },
-
-  {
-    code: "LEAD_CREATE",
-    description: "Create leads"
-  },
-  {
-    code: "LEAD_READ",
-    description: "View leads"
-  },
-  {
-    code: "LEAD_UPDATE",
-    description: "Update leads"
-  },
-  {
-    code: "LEAD_DELETE",
-    description: "Delete leads"
-  },
-
-  {
-    code: "EMAIL_CREATE",
-    description: "Create email records"
-  },
-  {
-    code: "EMAIL_READ",
-    description: "View emails"
-  },
-  {
-    code: "EMAIL_SEND",
-    description: "Send emails"
-  },
 
   {
     code: "EMPLOYEE_CREATE",
@@ -55,20 +21,131 @@ const permissions = [
   },
 
   {
-    code: "ROLE_CREATE",
-    description: "Create roles"
+    code: "LEAD_CREATE",
+    description: "Create leads"
   },
   {
-    code: "ROLE_READ",
-    description: "View roles and permissions"
+    code: "LEAD_READ",
+    description: "View leads"
   },
   {
-    code: "ROLE_UPDATE",
-    description: "Update roles and permissions"
+    code: "LEAD_UPDATE",
+    description: "Update leads"
+  },
+
+  {
+    code: "LEAD_CLIENT_NAME_READ",
+    description: "View client name"
   },
   {
-    code: "ROLE_DELETE",
-    description: "Delete roles"
+    code: "LEAD_CLIENT_EMAIL_READ",
+    description: "View client email"
+  },
+  {
+    code: "LEAD_CLIENT_PHONE_READ",
+    description: "View client phone"
+  },
+  {
+    code: "LEAD_DESTINATION_READ",
+    description: "View destination"
+  },
+  {
+    code: "LEAD_TRAVEL_DATE_READ",
+    description: "View travel date"
+  },
+  {
+    code: "LEAD_TRAVEL_REQUIREMENT_READ",
+    description: "View travel requirement"
+  },
+  {
+    code: "LEAD_NOTES_READ",
+    description: "View lead notes"
+  },
+
+  {
+    code: "LEAD_CODE_READ",
+    description: "View lead code"
+  },
+  {
+    code: "LEAD_STATUS_READ",
+    description: "View lead status"
+  },
+  {
+    code: "LEAD_CREATED_BY_READ",
+    description: "View lead created by"
+  },
+
+  {
+    code: "EMAIL_SENT_READ",
+    description: "View email sent information"
+  },
+
+  {
+    code: "EMAIL_CREATE",
+    description: "Create email drafts"
+  },
+  {
+    code: "EMAIL_SEND",
+    description: "Send emails"
+  },
+  {
+    code: "EMAIL_READ",
+    description: "View email records"
+  },
+
+  {
+    code: "ACCEPTANCE_READ",
+    description: "View client acceptance"
+  },
+  {
+    code: "ACCEPTANCE_STATUS_READ",
+    description: "View customer acceptance status"
+  },
+  {
+    code: "ACCEPTANCE_IP_READ",
+    description: "View customer acceptance IP"
+  },
+  {
+    code: "ACCEPTANCE_USER_AGENT_READ",
+    description: "View customer user agent"
+  },
+
+  {
+    code: "CARD_DETAILS_READ",
+    description: "View masked card details"
+  },
+
+  {
+    code: "EMAIL_RECIPIENT_READ",
+    description: "View email recipient"
+  },
+  {
+    code: "EMAIL_SUBJECT_READ",
+    description: "View email subject"
+  },
+  {
+    code: "EMAIL_STATUS_READ",
+    description: "View email status"
+  },
+  {
+    code: "EMAIL_SENT_AT_READ",
+    description: "View email sent time"
+  },
+  {
+    code: "EMAIL_ACCEPTED_AT_READ",
+    description: "View email accepted time"
+  },
+  {
+    code: "EMAIL_ACCEPTANCE_IP_READ",
+    description: "View email acceptance IP"
+  },
+  {
+    code: "EMAIL_SENT_BY_READ",
+    description: "View email sent by"
+  },
+  {
+    code: "EMAIL_VIEW_READ",
+    description: "View email content"
   }
 ];
 

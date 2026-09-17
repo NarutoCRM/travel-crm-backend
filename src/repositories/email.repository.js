@@ -6,6 +6,7 @@ const createEmail = async (data) => {
   });
 };
 
+
 const findById = async (id) => {
   return prisma.emailRecord.findUnique({
     where: {
@@ -30,6 +31,7 @@ const findById = async (id) => {
   });
 };
 
+
 const findByAcceptanceTokenHash = async (tokenHash) => {
   return prisma.emailRecord.findUnique({
     where: {
@@ -52,7 +54,12 @@ const findByAcceptanceTokenHash = async (tokenHash) => {
   });
 };
 
-const findAll = async ({ userId, status } = {}) => {
+
+const findAll = async ({
+  userId,
+  status
+} = {}) => {
+
   const where = {};
 
   if (userId) {
@@ -94,11 +101,24 @@ const findAll = async ({ userId, status } = {}) => {
   });
 };
 
-const findByLeadId = async (leadId, userId) => {
+
+const findByLeadId = async (
+  leadId,
+  userId
+) => {
+
   const where = {
     leadId
   };
 
+  /*
+   * Normal employee:
+   * only their own emails.
+   *
+   * Super Admin:
+   * userId = undefined
+   * therefore all emails.
+   */
   if (userId) {
     where.sentById = userId;
   }
@@ -134,7 +154,11 @@ const findByLeadId = async (leadId, userId) => {
   });
 };
 
-const updateStatus = async (id, status) => {
+
+const updateStatus = async (
+  id,
+  status
+) => {
   return prisma.emailRecord.update({
     where: {
       id
@@ -145,6 +169,7 @@ const updateStatus = async (id, status) => {
     }
   });
 };
+
 
 export {
   createEmail,
