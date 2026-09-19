@@ -25,6 +25,10 @@ const permissions = [
     code: "EMPLOYEE_DELETE",
     description: "Delete employees"
   },
+    {
+    code: "DASHBOARD_READ",
+    description: "View dashboard"
+  },
 
   {
     code: "LEAD_CREATE",
@@ -37,6 +41,10 @@ const permissions = [
   {
     code: "LEAD_UPDATE",
     description: "Update leads"
+  },
+    {
+    code: "LEAD_DELETE",
+    description: "Delete leads"
   },
 
   {
@@ -80,7 +88,22 @@ const permissions = [
     code: "LEAD_CREATED_BY_READ",
     description: "View lead created by"
   },
-
+  {
+    code: "ROLE_CREATE",
+    description: "Create roles"
+  },
+  {
+    code: "ROLE_READ",
+    description: "View roles"
+  },
+  {
+    code: "ROLE_UPDATE",
+    description: "Update roles"
+  },
+  {
+    code: "ROLE_DELETE",
+    description: "Delete roles"
+  },
   {
     code: "EMAIL_SENT_READ",
     description: "View email sent information"
