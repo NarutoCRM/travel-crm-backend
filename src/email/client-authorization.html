@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Authorization Confirmed</title>
+</head>
+
+<body style="
+  margin:0;
+  padding:0;
+  background:#f3f4f6;
+  font-family:Arial,Helvetica,sans-serif;
+  color:#1f2937;
+">
+
+<table
+  width="100%"
+  cellpadding="0"
+  cellspacing="0"
+  border="0"
+  style="background:#f3f4f6;padding:30px 10px;"
+>
+  <tr>
+    <td align="center">
+
+      <!-- Main Container -->
+      <table
+        width="620"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        style="
+          width:100%;
+          max-width:620px;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        "
+      >
+
+       
+
+
+        <!-- Header -->
+        <tr>
+          <td style="padding:0 20px;">
+
+            <table
+              width="100%"
+              cellpadding="0"
+              cellspacing="0"
+              border="0"
+              style="
+                background:#c69214;
+                border-radius:10px 10px 0 0;
+              "
+            >
+
+              <tr>
+
+                <td style="padding:25px;">
+
+                  <div style="
+                    font-size:11px;
+                    font-weight:bold;
+                    letter-spacing:2px;
+                    color:#ffffff;
+                    margin-bottom:8px;
+                  ">
+                    AUTHORIZATION CONFIRMED
+                  </div>
+
+                  <div style="
+                    font-size:25px;
+                    line-height:32px;
+                    font-weight:bold;
+                    color:#ffffff;
+                  ">
+                    Naruto Travels
+                  </div>
+
+                </td>
+
+
+                <td
+                  align="right"
+                  valign="middle"
+                  style="padding:25px;"
+                >
+
+                  <div style="
+                    font-size:10px;
+                    font-weight:bold;
+                    letter-spacing:1px;
+                    color:#ffffff;
+                  ">
+                    LEAD CODE
+                  </div>
+
+                  <div style="
+                    margin-top:6px;
+                    font-size:14px;
+                    font-weight:bold;
+                    color:#ffffff;
+                  ">
+                    {{leadCode}}
+                  </div>
+
+                </td>
+
+              </tr>
+
+            </table>
+
+          </td>
+        </tr>
+
+
+        <!-- Content -->
+        <tr>
+          <td style="padding:30px 35px;">
+
+            <p style="
+              margin:0 0 18px;
+              font-size:14px;
+              line-height:23px;
+            ">
+              Dear {{clientName}},
+            </p>
+
+
+            <p style="
+              margin:0 0 20px;
+              font-size:14px;
+              line-height:23px;
+            ">
+              Thank you for confirming your authorization.
+              We have successfully received your confirmation
+              for your travel request.
+            </p>
+
+
+            <!-- Status -->
+            <table
+              width="100%"
+              cellpadding="0"
+              cellspacing="0"
+              border="0"
+              style="
+                margin:20px 0;
+                background:#ecfdf3;
+                border:1px solid #b7e4c7;
+                border-radius:8px;
+              "
+            >
+
+              <tr>
+
+                <td style="padding:18px 20px;">
+
+                  <div style="
+                    font-size:11px;
+                    font-weight:bold;
+                    color:#166534;
+                    letter-spacing:1px;
+                  ">
+                    AUTHORIZATION STATUS
+                  </div>
+
+                  <div style="
+                    margin-top:7px;
+                    font-size:18px;
+                    font-weight:bold;
+                    color:#15803d;
+                  ">
+                    ✓ Authorized
+                  </div>
+
+                  <div style="
+                    margin-top:7px;
+                    font-size:12px;
+                    color:#4b5563;
+                  ">
+                    Confirmed on {{authorizedAt}}
+                  </div>
+
+                </td>
+
+              </tr>
+
+            </table>
+
+
+            <!-- Travel Details -->
+            <div style="
+              font-size:12px;
+              font-weight:bold;
+              color:#1f2937;
+              letter-spacing:1px;
+              padding-bottom:8px;
+              border-bottom:2px solid #c69214;
+            ">
+              TRAVEL DETAILS
+            </div>
+
+
+            <table
+              width="100%"
+              cellpadding="0"
+              cellspacing="0"
+              border="0"
+            >
+
+              <tr>
+
+                <td style="
+                  padding:10px 0;
+                  font-size:13px;
+                  color:#6b7280;
+                ">
+                  Lead Code
+                </td>
+
+                <td
+                  align="right"
+                  style="
+                    padding:10px 0;
+                    font-size:13px;
+                    font-weight:bold;
+                  "
+                >
+                  {{leadCode}}
+                </td>
+
+              </tr>
+
+
+              <tr>
+
+                <td style="
+                  padding:10px 0;
+                  font-size:13px;
+                  color:#6b7280;
+                ">
+                  Destination
+                </td>
+
+                <td
+                  align="right"
+                  style="
+                    padding:10px 0;
+                    font-size:13px;
+                    font-weight:bold;
+                  "
+                >
+                  {{destination}}
+                </td>
+
+              </tr>
+
+
+              <tr>
+
+                <td style="
+                  padding:10px 0;
+                  font-size:13px;
+                  color:#6b7280;
+                ">
+                  Travel Date
+                </td>
+
+                <td
+                  align="right"
+                  style="
+                    padding:10px 0;
+                    font-size:13px;
+                    font-weight:bold;
+                  "
+                >
+                  {{travelDate}}
+                </td>
+
+              </tr>
+
+
+              <tr>
+
+                <td style="
+                  padding:10px 0;
+                  font-size:13px;
+                  color:#6b7280;
+                ">
+                  Travel Requirement
+                </td>
+
+                <td
+                  align="right"
+                  style="
+                    padding:10px 0;
+                    font-size:13px;
+                    font-weight:bold;
+                  "
+                >
+                  {{travelRequirement}}
+                </td>
+
+              </tr>
+
+            </table>
+
+
+            <p style="
+              margin:22px 0 0;
+              font-size:13px;
+              line-height:22px;
+              color:#4b5563;
+            ">
+              Your authorization has been successfully recorded.
+              Our travel team will now proceed with the next steps
+              regarding your request.
+            </p>
+
+
+          </td>
+        </tr>
+
+
+        <!-- Footer -->
+        <tr>
+
+          <td style="
+            padding:20px 35px 30px;
+            border-top:1px solid #e5e7eb;
+          ">
+
+            <p style="
+              margin:0 0 5px;
+              font-size:13px;
+              font-weight:bold;
+            ">
+              Thank you for choosing Naruto Travels.
+            </p>
+
+
+            <p style="
+              margin:12px 0 0;
+              font-size:12px;
+              line-height:20px;
+              color:#6b7280;
+            ">
+
+              Reservations Team<br>
+
+              Email:
+
+              <a
+                href="mailto:{{supportEmail}}"
+                style="
+                  color:#2563eb;
+                  text-decoration:none;
+                "
+              >
+                {{supportEmail}}
+              </a>
+
+        
+
+            </p>
+
+          </td>
+
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
+
