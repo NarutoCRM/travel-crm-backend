@@ -22,8 +22,6 @@ function loadTemplate(templateName, variables) {
 function getFormattedData(html) {
   const $ = cheerio.load(html);
 
-  const headerType = $("td").first().find("div").eq(0).text().trim();
-  const companyName = $("td").first().find("div").eq(1).text().trim();
   const bookingNumber = $("td")
     .filter((_, el) => $(el).text().includes("BOOKING REF"))
     .find("div")
@@ -31,13 +29,12 @@ function getFormattedData(html) {
     .text()
     .trim();
 
-  const headerColor = $("#booking-header").css("background-color") || "#c69214";
-
   return {
-    headerType,
-    companyName,
+    headerType: $("td").first().find("div").eq(1).text().trim(),
+    companyName: $("td").first().find("div").eq(1).text().trim(),
     bookingNumber,
-    headerColor,
+    headerColor: $("#booking-header").css("background-color") || "#c69214",
+    paymentAmount: $("#amount").text().trim() || "N/A",
   };
 }
 
@@ -50,12 +47,13 @@ export async function sendAuthorizationEmail(data, acceptedAt) {
     companyName: formattedData.companyName,
     bookingNumber: formattedData.bookingNumber,
     headerColor: formattedData.headerColor,
+    paymentAmount: formattedData.paymentAmount,
     authorizedAt: acceptedAt,
   });
 
   await transporter.sendMail({
     from: env.smtp.from,
-    to: data.email,
+    to: data.recipientEmail,
     subject: `Authorization Confirmed | ${formattedData.companyName} | ${formattedData.headerType} | ${formattedData.bookingNumber}`,
     text: `Dear ${data.sentBy.name},\n\nYour authorization has been confirmed for the booking ${formattedData.bookingNumber}.\n\nThank you,\n${formattedData.companyName}`,
     html: html,

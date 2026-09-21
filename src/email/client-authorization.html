@@ -62,9 +62,10 @@
                           letter-spacing: 2px;
                           color: #ffffff;
                           margin-bottom: 8px;
+                          text-transform: uppercase;
                         "
                       >
-                        {{headerType}} AUTHORIZATION CONFIRMED
+                        {{headerType}} - AUTHORIZATION CONFIRMED
                       </div>
 
                       <div
@@ -166,102 +167,6 @@
                   </tr>
                 </table>
 
-                <!-- Travel Details -->
-                <!-- <div
-                  style="
-                    font-size: 12px;
-                    font-weight: bold;
-                    color: #1f2937;
-                    letter-spacing: 1px;
-                    padding-bottom: 8px;
-                    border-bottom: 2px solid #c69214;
-                  "
-                >
-                  TRAVEL DETAILS
-                </div> -->
-
-                <!-- <table width="100%" cellpadding="0" cellspacing="0" border="0"> -->
-                  <!-- <tr>
-
-                <td style="
-                  padding:10px 0;
-                  font-size:13px;
-                  color:#6b7280;
-                ">
-                  Lead Code
-                </td>
-
-                <td
-                  align="right"
-                  style="
-                    padding:10px 0;
-                    font-size:13px;
-                    font-weight:bold;
-                  "
-                >
-                  {{leadCode}}
-                </td>
-
-              </tr> -->
-<!-- 
-                  <tr>
-                    <td
-                      style="padding: 10px 0; font-size: 13px; color: #6b7280"
-                    >
-                      Destination
-                    </td>
-
-                    <td
-                      align="right"
-                      style="
-                        padding: 10px 0;
-                        font-size: 13px;
-                        font-weight: bold;
-                      "
-                    >
-                      {{destination}}
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td
-                      style="padding: 10px 0; font-size: 13px; color: #6b7280"
-                    >
-                      Travel Date
-                    </td>
-
-                    <td
-                      align="right"
-                      style="
-                        padding: 10px 0;
-                        font-size: 13px;
-                        font-weight: bold;
-                      "
-                    >
-                      {{travelDate}}
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td
-                      style="padding: 10px 0; font-size: 13px; color: #6b7280"
-                    >
-                      Travel Requirement
-                    </td>
-
-                    <td
-                      align="right"
-                      style="
-                        padding: 10px 0;
-                        font-size: 13px;
-                        font-weight: bold;
-                      "
-                    >
-                      {{travelRequirement}}
-                    </td>
-                  </tr> -->
-                <!-- </table> -->
-
                 <p
                   style="
                     margin: 22px 0 0;
@@ -277,19 +182,52 @@
               </td>
             </tr>
 
+            <!-- Payment Details -->
+        
+            <tr
+            style="
+              margin: 20px 0;
+              background: #fffbeb;
+              border: 1px solid #f3d58a;
+              border-radius: 8px;
+            "
+              >
+                <td style="padding: 18px 20px">
+                  <div
+                    style="
+                      font-size: 11px;
+                      font-weight: bold;
+                      color: #92400e;
+                      letter-spacing: 1px;
+                    "
+                  >
+                    PAYMENT DETAILS
+                  </div>
+
+                  <div style="margin-top: 7px; font-size: 12px; color: #4b5563">
+                    Amount charged for this authorization
+                  </div>
+
+                  <div
+                    style="
+                      margin-top: 8px;
+                      font-size: 24px;
+                      line-height: 30px;
+                      font-weight: bold;
+                      color: #92400e;
+                    "
+                  >
+                    {{paymentAmount}}
+                  </div>
+                </td>
+              </tr>
+           
+
             <!-- Footer -->
             <tr>
               <td
                 style="padding: 20px 35px 30px; border-top: 1px solid #e5e7eb"
               >
-                <!-- <p style="
-              margin:0 0 5px;
-              font-size:13px;
-              font-weight:bold;
-            ">
-              Thank you for choosing Naruto Travels.
-            </p> -->
-
                 <p
                   style="
                     margin: 0;
