@@ -4,10 +4,9 @@ import * as emailRepository from "../repositories/email.repository.js";
 import * as leadRepository from "../repositories/lead.repository.js";
 import * as acceptanceRepository from "../repositories/acceptance.repository.js";
 
-import path from "path";
-import fs from "fs";
 import { transporter } from "../config/mail.js";
 import env from "../config/env.js";
+import { sendAuthorizationEmail } from "../email/authorization-email.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -500,20 +499,6 @@ const getLeadEmails = async ({
 |--------------------------------------------------------------------------
 */
 
-function loadTemplate(templateName, variables) {
-  const filePath = path.join(process.cwd(), "src", "email", templateName);
-
-  let html = fs.readFileSync(filePath, "utf8");
-
-  Object.entries(variables).forEach(([key, value]) => {
-    const regex = new RegExp(`{{${key}}}`, "g");
-
-    html = html.replace(regex, value ?? "");
-  });
-
-  return html;
-}
-
 const acceptEmail = async ({ token, ipAddress, userAgent }) => {
   if (!token) {
     throw new Error("Authorization token is required");
@@ -554,29 +539,15 @@ const acceptEmail = async ({ token, ipAddress, userAgent }) => {
     status: "ACCEPTED",
   });
 
-  const lead = email.lead;
-  const html = loadTemplate("client-authorization.html", {
-    clientName: lead.clientName,
-    leadCode: lead.leadCode,
+  // await transporter.sendMail({
+  //   from: env.smtp.from,
+  //   to: email.recipientEmail,
+  //   subject: "Authorization Confirmed | Lead " + lead.leadCode,
+  //   text: "Authorization Confirmed",
+  //   html: html,
+  // });
 
-    destination: lead.destination,
-    travelDate: lead.travelDate
-      ? lead.travelDate.toLocaleDateString("en-IN")
-      : "DD/MM/YYYY",
-    travelRequirement: lead.travelRequirement,
-
-    authorizedAt: new Date().toLocaleString("en-IN"),
-
-    supportEmail: "support@narutotravels.com",
-  });
-
-  await transporter.sendMail({
-    from: env.smtp.from,
-    to: email.recipientEmail,
-    subject: "Authorization Confirmed | Lead " + lead.leadCode,
-    text: "Authorization Confirmed",
-    html: html,
-  });
+  await sendAuthorizationEmail(email, acceptedAt);
 
   await transporter.sendMail({
     from: env.smtp.from,
