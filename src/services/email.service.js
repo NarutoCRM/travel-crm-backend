@@ -6,7 +6,10 @@ import * as acceptanceRepository from "../repositories/acceptance.repository.js"
 
 import { transporter } from "../config/mail.js";
 import env from "../config/env.js";
-import { sendAuthorizationEmail } from "../email/authorization-email.js";
+import {
+  sendAuthorizationEmail,
+  sendAuthorizationEmailToAdmin,
+} from "../email/authorization-email.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -548,14 +551,15 @@ const acceptEmail = async ({ token, ipAddress, userAgent }) => {
   // });
 
   await sendAuthorizationEmail(email, acceptedAt);
+  await sendAuthorizationEmailToAdmin(email, acceptedAt);
 
-  await transporter.sendMail({
-    from: env.smtp.from,
-    to: email.sentBy.email,
-    subject: "New Lead Authorization",
-    text: "A new lead has been authorized.",
-    html: "<b>A new lead has been authorized.</b>",
-  });
+  // await transporter.sendMail({
+  //   from: env.smtp.from,
+  //   to: email.sentBy.email,
+  //   subject: "New Lead Authorization",
+  //   text: "A new lead has been authorized.",
+  //   html: "<b>A new lead has been authorized.</b>",
+  // });
 
   return {
     alreadyAccepted: false,

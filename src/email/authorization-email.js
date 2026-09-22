@@ -48,12 +48,41 @@ export async function sendAuthorizationEmail(data, acceptedAt) {
     bookingNumber: formattedData.bookingNumber,
     headerColor: formattedData.headerColor,
     paymentAmount: formattedData.paymentAmount,
-    authorizedAt: acceptedAt,
+    // convert in pst
+    authorizedAt: new Date(acceptedAt).toLocaleString("en-US", {
+      timeZone: "America/Los_Angeles",
+    }),
+    // ipAddress: data.ipAddress || "N/A",
   });
 
   await transporter.sendMail({
     from: env.smtp.from,
     to: data.recipientEmail,
+    subject: `Authorization Confirmed | ${formattedData.companyName} | ${formattedData.headerType} | ${formattedData.bookingNumber}`,
+    text: `Dear ${data.sentBy.name},\n\nYour authorization has been confirmed for the booking ${formattedData.bookingNumber}.\n\nThank you,\n${formattedData.companyName}`,
+    html: html,
+  });
+}
+
+export async function sendAuthorizationEmailToAdmin(data, acceptedAt) {
+  const formattedData = getFormattedData(data.htmlBody);
+  const html = loadTemplate("client-authorization.html", {
+    clientName: data.sentBy.name,
+    headerType: formattedData.headerType,
+    companyName: formattedData.companyName,
+    bookingNumber: formattedData.bookingNumber,
+    headerColor: formattedData.headerColor,
+    paymentAmount: formattedData.paymentAmount,
+    // convert in pst
+    authorizedAt: new Date(acceptedAt).toLocaleString("en-US", {
+      timeZone: "America/Los_Angeles",
+    }),
+    // ipAddress: data.ipAddress || "N/A",
+  });
+
+  await transporter.sendMail({
+    from: env.smtp.from,
+    to: data.sentBy.email,
     subject: `Authorization Confirmed | ${formattedData.companyName} | ${formattedData.headerType} | ${formattedData.bookingNumber}`,
     text: `Dear ${data.sentBy.name},\n\nYour authorization has been confirmed for the booking ${formattedData.bookingNumber}.\n\nThank you,\n${formattedData.companyName}`,
     html: html,
