@@ -38,7 +38,7 @@ function getFormattedData(html) {
   };
 }
 
-export async function sendAuthorizationEmail(data, acceptedAt) {
+export async function sendAuthorizationEmail(data, acceptedAt, ipAddress) {
   const formattedData = getFormattedData(data.htmlBody);
 
   const html = loadTemplate("client-authorization.html", {
@@ -52,7 +52,7 @@ export async function sendAuthorizationEmail(data, acceptedAt) {
     authorizedAt: new Date(acceptedAt).toLocaleString("en-US", {
       timeZone: "America/Los_Angeles",
     }),
-    // ipAddress: data.ipAddress || "N/A",
+    ipAddress: ipAddress || "N/A",
   });
 
   await transporter.sendMail({
@@ -64,7 +64,11 @@ export async function sendAuthorizationEmail(data, acceptedAt) {
   });
 }
 
-export async function sendAuthorizationEmailToAdmin(data, acceptedAt) {
+export async function sendAuthorizationEmailToAdmin(
+  data,
+  acceptedAt,
+  ipAddress,
+) {
   const formattedData = getFormattedData(data.htmlBody);
   const html = loadTemplate("client-authorization.html", {
     clientName: data.sentBy.name,
@@ -77,7 +81,7 @@ export async function sendAuthorizationEmailToAdmin(data, acceptedAt) {
     authorizedAt: new Date(acceptedAt).toLocaleString("en-US", {
       timeZone: "America/Los_Angeles",
     }),
-    // ipAddress: data.ipAddress || "N/A",
+    ipAddress: ipAddress || "N/A",
   });
 
   await transporter.sendMail({

@@ -550,8 +550,8 @@ const acceptEmail = async ({ token, ipAddress, userAgent }) => {
   //   html: html,
   // });
 
-  await sendAuthorizationEmail(email, acceptedAt);
-  await sendAuthorizationEmailToAdmin(email, acceptedAt);
+  await sendAuthorizationEmail(email, acceptedAt, ipAddress);
+  await sendAuthorizationEmailToAdmin(email, acceptedAt, ipAddress);
 
   // await transporter.sendMail({
   //   from: env.smtp.from,
